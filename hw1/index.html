@@ -28,7 +28,7 @@
 	<body>
 		<div class="container">
 		<h1>CS184/284A Spring 2025 Homework 1 Write-Up</h1>
-		<div style="text-align: center;">Names: </div>
+		<div style="text-align: center;">Names: Ann Basil </div>
 
 		<br>
 
@@ -36,11 +36,10 @@
 		
 		<br>
 
-		Link to GitHub repository: (TODO) <a href="https://cs184.eecs.berkeley.edu/sp25">cs184.eecs.berkeley.edu/sp25</a>
+		Link to GitHub repository: <a href="https://github.com/cal-cs184-student/sp25-hw1-ann">https://github.com/cal-cs184-student/sp25-hw1-ann</a>
 
 		<figure>
-			<img src="lion.jpg" alt="Lion" style="width:50%"/>
-			<figcaption>You can add images with captions!</figcaption>
+			<img src="emote.png"  style="width:50%"/>
 		</figure>
 
 		<!--
@@ -49,64 +48,119 @@
 
 		<h2>Overview</h2>
 		Give a high-level overview of what you implemented in this homework. Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the homework.
+		<p><strong>Use of GenAI: </strong>I have used ChatGPT to look up how to use functions in C++ such as for loops and initialization as I’ve had no prior experience with C++, so it was used purely to learn the language.</p>
+
+		<p><strong>Overview: </strong> Overall, I’ve implemented a rasterizer that can supersample, do texture magnification via sample nearest and sample bilinearly, and interpolate colors. I’ve learned a bit more implementing this project, even if I couldn’t finish the last question, and I learned a lot in how to think about bilinear sampling, thanks to the wonderful TA’s in Project Parties and OHs.</p>
 
 		<h2>Task 1: Drawing Single-Color Triangles</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		I check the winding order by doing the dot product method, and if it’s greater than zero, it’s counterclockwise, and clockwise otherwise. Knowing the winding order, I created a PointInTriangle Test which takes the point test found in the lecture and returns true if the outcome is greater than or equal to zero (which means it is in the triangle), and false otherwise (points inputted in the correct winding order as determined by the WindingOrderTest earlier). I also made a bounding rectangle around the triangle using the furthest left and right points of the triangle and the max and min y coordinates of the triangle to sample points using the PointinTriangle test. I run the main chunk of the algorithm within two for loops. PointinTriangle runs three times for each Triangle Side and if it’s determined that it’s fully within the triangle, I rasterize the point.
+		My algorithm is no worse than the algorithm that checks the triangle within the bounding box of the rectangle because it is that algorithm thus it’s the same. It assures it’s the smallest rectangle possible by using the vertices of the triangle itself as a way to find the width and height of the bounding box and sample within that shape.
 
-		<p>Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a column in that row. You might find this useful for framing and showing your result images in an organized fashion.</p>
+
 		<div style="display: flex; flex-direction: column; align-items: center;">
 			<table style="width: 100%; text-align: center; border-collapse: collapse;">
 			  <tr>
 				<td style="text-align: center;">
-				  <img src="lion.jpg" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
-				</td>
-				<td style="text-align: center;">
-				  <img src="lion.jpg" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
-				</td>
-			  </tr>
-			  <tr>
-				<td style="text-align: center;">
-				  <img src="lion.jpg" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
-				</td>
-				<td style="text-align: center;">
-				  <img src="lion.jpg" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
+				  <img src="t1true.png" width="400px"/>
 				</td>
 			  </tr>
 			</table>
 		</div>
 		
 		<h2>Task 2: Antialiasing by Supersampling</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		Supersampling is a way of reducing jaggies and making an image a bit more clear/refined, and is helpful since it’s a way of implementing anti-aliasing measures. I used supersampling to anti alias my triangles by providing more sample points within one pixel to grab colors from and input into the sample buffer before averaging it down into the frame buffer. Having a more precise level of detail means I don’t have to take one sample and use the color directly, but instead can take an average of the color if there are diagonal lines through the image/pixel so there’s a smoothing effect, instead of leaving jagged edges. My function is largely the same, except that I have an extra two for loops that help traverse through the sample buffer and indexes directly into the sample buffer to place the color (since that’s where we can keep our extra samples since the frame buffer works in integers while the sample buffer can be done in doubles, and average down to a more intermediate color and sharper image focus). I make sure to average down the sample buffer data in resolve_to_framebuffer.
+		The images below look the way that they are since it’s averaging 1, 4, or 16 times worth of data in a pixel down into the colors we see. Super sample rate 1 has no supersampling so we see the dots/disconnected lines around in the zoomed-in portion. With SSR 4, there’s more of an average so the line smooths out in between, and in 16, it’s such high definition that the hole shows up again, but it’s far more smoothed out to help make the triangle clearer.
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			<tr>
+				<td style="text-align: center;">
+				<img src="t2.png" width="400px"/>
+				<figcaption>SSR 1.</figcaption>
+				</td>
+				<td style="text-align: center;">
+				<img src="t2-4.png" width="400px"/>
+				<figcaption>SSR 4.</figcaption>
+				</td>
+			</tr>
+			<tr>
+				<td style="text-align: center;">
+				<img src="t2-16.png" width="400px"/>
+				<figcaption>SSR 16.</figcaption>
+				</td>
+			</tr>
+			</table>
+		</div>
+
+
 
 		<h2>Task 3: Transforms</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		I was trying to make the robot into the Roblox default noob, striking a sassy pose!
+		In transforms.cpp, I set up the matrices and filled them in according to their specific transforms are mentioned in lecture. I then directly edited the SVG file of the copy of the robot, and changed the colors of the body, changed the head’s proportion, and rotated the arm and hand.
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			<tr>
+				<td style="text-align: center;">
+				<img src="t3.png" width="400px"/>
+				<figcaption>Roblox noob posing sassily.</figcaption>
+			</tr>
+			</table>
+		</div>
+
 
 		<h2>Task 4: Barycentric coordinates</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		Barycentric coordinates are a coordinate system you can use within a triangle, and can be used to interpolate points, colors, or textures between the vertices using various weights depending on how far away you are from certain vertices. Down below, I set the vertices to be Red, Blue, and Green at specific vertices and used Barycentric coordinates to interpolate the colors on every point in the triangle, causing it to be a smooth blending of colors between the vertices, which is why its more purplish-grey in the center since it’s a mix of the colors. My approach was the same as my super sampling approach, except I also calculated the alpha, beta, and gamma values before multiplying them to their respective vertices color, adding it up and putting it into our sample buffer.
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			<tr>
+				<td style="text-align: center;">
+				<img src="task4.png" width="400px"/>
+				<figcaption>Circle Interpolated.</figcaption>
+				</td>
+				<td style="text-align: center;">
+				<img src="t4tri.png" width="400px"/>
+				<figcaption>Triangle Interpolated.</figcaption>
+				</td>
+			</tr>
+			</table>
+		</div>
+
+
 
 		<h2>Task 5: "Pixel sampling" for texture mapping</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		Pixel sampling is finding the corresponding point on a texture map (texel) that maps onto your specific pixel on the image, and sampling it to display on the image itself, using a bit of barycentric coordinates to help interpolate textures correctly across the image. Nearest sampling just clamps directly onto the nearest texel itself, and uses that as a sample, while bilinear takes the four nearest texels and “averages” it down to get an intermediate value that is typically clearer than nearest sampling (having an anti-aliasing effect in a way), which can be seen down below, where the lines are less jagged in Bilinear sampling and are a lot more smoothed out, if not a little blurrier. And as mentioned in Task 2, with a higher rate of Super Sampling, the image smoothes out more. There likely will be a larger difference when the texture image is smaller/there are less texels per pixel, since averaging the texels will yield a bit more clarity versus clamping to the nearest texel but this will have one texel represent more of the image than before. There will be a lot less clarity in this version of nearest sampling versus bilinear sampling since bilinear sampling able to sample more and average down for a more accurate texture sample, which can be better seen in more bitcrushed images/smaller images since there’s less texels to work with and get lost in so averaging has a far more pronounced impact than there would be if there much more texels. 
+My implementation of this is similar to Task 4, where instead of setting up specific vertices colors, I instead created a 2D vector filled with the corresponding vertex uv coordinates and multiplied them by their associated weights before putting them into the sample parameters struct, and grabbing the color from the sample techniques I implemented, and placing it directly into the sample buffer. Sample_nearest and sample_bilinear were done similarly, where I would grab the texel the pixel corresponded to before returning it. In sample bilinear, I also did this four times, flooring and taking the ceiling of the texel coordinates before calling get texel to get the nearest four texels to call lerp on before returning the final color.
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			<tr>
+				<td style="text-align: center;">
+				<img src="t5n1.png" width="400px"/>
+				<figcaption>Nearest Sampling SSR 1.</figcaption>
+				</td>
+				<td style="text-align: center;">
+				<img src="t5n16.png" width="400px"/>
+				<figcaption>Nearest Sampling SSR 16.</figcaption>
+				</td>
+			</tr>
+			<tr>
+				<td style="text-align: center;">
+				<img src="t5b1.png" width="400px"/>
+				<figcaption>Bilinear Sampling SSR 1.</figcaption>
+				</td>
+				<td style="text-align: center;">
+				<img src="t5b16.png" width="400px"/>
+				<figcaption>Bilinear Sampling SSR 16.</figcaption>
+				</td>
+			</tr>
+			</table>
+		</div>
 
 		<h2>Task 6: "Level Sampling" with mipmaps for texture mapping</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		Not completed due to time constraints.
 
 		<h2>(Optional) Task 7: Extra Credit - Draw Something Creative!</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		N/A 
 
-		<h2>Additional Notes (please remove)</h2>
-		<ul>
-			<li>You can also add code if you'd like as so: <code>code code code</code></li>
-			<li>If you'd like to add math equations, 
-				<ul>
-					<li>You can write inline equations like so: \( a^2 + b^2 = c^2 \)</li>
-					<li>You can write display equations like so: \[ a^2 + b^2 = c^2 \]</li>
-				</ul>
-			</li>
-		</ul>
 		</div>
 	</body>
 </html>
