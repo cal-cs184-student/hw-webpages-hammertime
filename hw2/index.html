@@ -146,7 +146,35 @@
 
 
 		<h3>Part 4: Edge flip</h3>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		<p>I drew out the image of flipping the edge on a triangle, and marked all the vertices, edges, halfedges, nexts, and faces 
+			and labeled all of them, before going so and marking them all in code by calling variants of e0->halfedge()->(neededitem). 
+			Once I had all of the variables, I went and set neighbors of all of the halfedges noted down, 
+			both the primary ones of the flipped edges, as well as all of the "nexts", and instead of adding or deleting any references, I simply just reassigned them
+			into the positions where we "should have" the "new edges/faces". After doing so, I then updated the vertexes and the faces explicitly. In all of this,
+			I check if the edges or joining faces are boundaries, and if not, I do the above reassignments.
+			There wasn't any interesting debugging tricks I used, since trying to run make and then loading in the teapot would cause the code to run forever and
+			start to loop if I flipped an edge. I triple checked everything, and not finding a flaw in how I did it, i decided to reorder how 
+			I assigned the variables, assigning all the half edges first before the edges (having done the earlier before), which caused everything to fix itself, so it likely was just a minor syntax error that got cleaned up.
+			It was a very annoying debugging journey as it was unclear as to what was going wrong, having to use printstatements to see where the issues were coming from, before going in and cleaning up the variables to make them more readable, which likely led to cleaning up syntax errors!
+		</p>
+		
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="T4-Unflip.png" width="400px"/>
+				  <figcaption>Not flipped.</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="T4-Flip.png" width="400px"/>
+				  <figcaption>Flipped.</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
 
 		<h3>Part 5: Edge split</h3>
 		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
