@@ -40,16 +40,21 @@
 
 		<figure>
 			<img src="teapot.png" alt="Teapot" style="width:50%"/>
-			<figcaption>You can add images with captions!</figcaption>
+			<figcaption>Hi.</figcaption>
 		</figure>
 
 		<!--
 		We've already added one heading per part, to make your write-up as navigable when grading. Please fit your write-up within these sections!
 		-->
+		<p><strong>Use of GenAI: </strong>I have used ChatGPT to look up how to use functions in C++ such as for loops and initialization as I’ve had no prior experience with C++, so it was used purely to learn the language, and break down any concepts I may have had difficulties understanding on a high level.</p>
+
 
 		<h2>Overview</h2>
-		Give a high-level overview of what you implemented in this homework. Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the homework.
+		<p>Overall, I've implemented various mesh alteration levels on the 2D and 3D level from lines to teapots and cubes, specifically building off of bezier curves and surfaces and using flipping, splitting, and subdivision to increase the mesh vertex count, and better smooth shapes.
+			Additionally, I used implemented Phong shading using area-weighted vertex normals. I gained a deeper understanding of the modelling unit through this, and saw how surprisingly simple, but tedious this could be, and Phong shading was just nice to see implemented in general.
 
+		</p>
+		
 		<h2>Section I: Bezier Curves and Surfaces</h2>
 
 		<h3>Part 1: Bezier curves with 1D de Casteljau subdivision</h3>
@@ -208,21 +213,69 @@
 
 
 		<h3>Part 6: Loop subdivision for mesh upsampling</h3>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		<p>I implemented loop subdivision by first calculating the new positions of new vertices and old vertices, storing them within the edges and vertex NewPosition attribute. This was done using the equations shown in the spec.
+			The function is made up of several separate for loops each iterating through every vertex or every edge in the mesh. 
+			I additionally set every vertex and edge to false in their isNew Attribute.
+			I then go through the current number of edges in the mesh, and split on each of those edges, ensuring I only split on the originally given edges without going into an infinite loop of splitting on new ones that are created as well.
+			I then set our new vertex's new position from the calculated position earlier in edges then, to prevent any issues further down the line with setting all the new positions.
+			I then flip on every edge that connects an old vertex to a new one, and once that's done, I have a simple for loop that just updates every vertex position with what's in their newPosition.
+			I used print statements to help debug since I was having infinite forloop issues, and found the issue in my splitEdges where I had a minor pointer reallocation issue that was causing issues, + accidentally splitting on every new edge.
+			
+			Presplitting edges causes more symmetrical subdivisions as shown in the images, and flipping changes the direction the asymmetry points in.
+			Generally, splitting makes more meshes/edges to conform to, which starts to smoothen and refine shapes while having less edges means it tends to be bulkier. Flipping tends to fix the more random look to the mesh, as shown in the spec image with the mesh looking rather jagged and random before flipping made it more ordered, as also shown in the images.
+		</p>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="T6-Normal.png" width="400px"/>
+				  <figcaption>Not subdivided. No splits.</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="T6-Lvl1Sub.png" width="400px"/>
+					<figcaption>Subdivided Once.</figcaption>
+				  </td>
+				  <td style="text-align: center;">
+					<img src="T6-Lvl2Sub.png" width="400px"/>
+					<figcaption>Subdivided Twice.</figcaption>
+				  </td>
+				</tr>
+				<tr>
+				  <td style="text-align: center;">
+					<img src="T6-Lvl1PresplitSub.png" width="400px"/>
+					<figcaption>Split on every face and then subdivided once.</figcaption>
+				  </td>
+				  <td style="text-align: center;">
+					<img src="T6-SplitFlipSub.png" width="400px"/>
+					<figcaption>Split on one face, flipped on another, subdivided once.</figcaption>
+				  </td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="T6-PresplitLvl0.png" width="400px"/>
+				  <figcaption>Split on every face, not subdivided.</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="T6-PresplitLvl1.png" width="400px"/>
+					<figcaption>Split and subdivided once.</figcaption>
+				  </td>
+				  <td style="text-align: center;">
+					<img src="T6-PresplitLvl2.png" width="400px"/>
+					<figcaption>Split and subdivided twice.</figcaption>
+				  </td>
+				  <td style="text-align: center;">
+					<img src="T6-PresplitLvl3.png" width="400px"/>
+					<figcaption>Split and subdivided three times.</figcaption>
+				  </td>
+			  </tr>
+			</table>
+		</div>
+
+
 
 		<h2>(Optional) Section III: Potential Extra Credit - Art Competition: Model something Creative</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-		<h2>Additional Notes (please remove)</h2>
-		<ul>
-			<li>You can also add code if you'd like as so: <code>code code code</code></li>
-			<li>If you'd like to add math equations, 
-				<ul>
-					<li>You can write inline equations like so: \( a^2 + b^2 = c^2 \)</li>
-					<li>You can write display equations like so: \[ a^2 + b^2 = c^2 \]</li>
-				</ul>
-			</li>
-		</ul>
+		
 		</div>
 	</body>
 </html>
