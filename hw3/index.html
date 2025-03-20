@@ -28,12 +28,12 @@
 	<body>
 		<div class="container">
 		<h1>CS184/284A Spring 2025 Homework 3 Write-Up</h1>
-		<div style="text-align: center;">Names: </div>
+		<div style="text-align: center;">Names: Ann Basil </div>
 
 		<br>
 
-		Link to webpage: (TODO) <a href="https://cs184.eecs.berkeley.edu/sp25">cs184.eecs.berkeley.edu/sp25</a>
-		Link to GitHub repository: (TODO) <a href="https://cs184.eecs.berkeley.edu/sp25">cs184.eecs.berkeley.edu/sp25</a>
+		Link to webpage: (TODO) <a href="https://cs184.eecs.berkeley.edu/sp25">cs184.eecs.berkeley.edu/sp25</a><br>
+		Link to GitHub repository: (TODO) <a href="https://github.com/cal-cs184-student/sp25-hw3-nobodyakaodysseus">https://github.com/cal-cs184-student/sp25-hw3-nobodyakaodysseus</a>
 		
 		<figure>
 			<img src="cornell.png" alt="Cornell Boxes with Bunnies" style="width:70%"/>
@@ -48,36 +48,97 @@
 		Give a high-level overview of what you implemented in this homework. Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the homework.
 
 		<h2>Part 1: Ray Generation and Scene Intersection</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		<p>In ray generation, I shifted the coordinates given to us into coordinates relative to the camera space, 
+			before using those adjusted coordinates to calculate our direction vector by multiplying those coordinates to 
+			their corresponding camera space bottom-left and top-right coordinates axis.
+			This was (+-tan(0.5 x hFov), +-tan(0.5 x vFov), -1) turning 
+			into </p>
+			<code>Vector3D(x*tan(0.5*radians(hFov)), y*tan(0.5*radians(vFov)), -1)</code> 
+			<p>I then just multiply the camera-to-world rotation matrix to the direction vector, nornalize it, and initialize the
+				origin, direction, and min and maximum t of our ray. This overall is shifting our ray from the image plane into a camera space where we find 
+				the direction of the ray, before translating that light back into the image plane so it's properly lit up.<br>
 
-		<p>Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a column in that row. You might find this useful for framing and showing your result images in an organized fashion.</p>
+				To raytrace the pixels, I loop through the samples we have and get a uniformly distributed and randomly selected sample that I use
+				the coordinates of along with our given pixel coordinates to normalize our coordinates on the image plane, generate our rays
+				based on the normalized coordinates (using the function I implemented for ray generation), and get an estimation of 
+				the screen radiance which I add up over all the samples we take and average it in a Vector3D, and update the pixel with that 
+				averaged screen radiance, incorporating it into my Monte Carlo estimate of the Vector3D of the pixel.<br><br>
+
+				For primitive intersections, that comes in with ray-triangle and ray-sphere intersections where we check to see if there is an 
+				interseciton and report back the nearest intersection point by updating max_t to be the nearest intersection so we can ignore primitives/intersections 
+				that are further away.<br><br>
+				An example of that comes in my implementation of the triangle intersect functions, where I use the Möller Trumbore Algorithim using the ray origin,
+				ray direction, and vertices of the triangles. I subtract and take crossproducts of them to create intermediate values that I later use to create an output vector
+				that is a 3D vector filled with dot products of the intermediate products scaled by 1 over the dot product of two of the intermediate values.
+				Doing so, I get the t value at which the ray intersects the primitive, as well as the barycentric coordinate weights if all add up to 1 then means we have a successful
+				intersection. Those weights are used to interpolate the surface normals, and the intersection variables (such as t, normals, primitives, bsdf) and the ray.max_t are all filled out before I return true.
+				Otherwise, if it fails at any point, false is returned.
+			</p>
+
 		<div style="display: flex; flex-direction: column; align-items: center;">
 			<table style="width: 100%; text-align: center; border-collapse: collapse;">
 			  <tr>
 				<td style="text-align: center;">
-				  <img src="cornell.png" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
+				  <img src="CBspheres.png" width="400px"/>
+				  <figcaption>CBSpheres.</figcaption>
 				</td>
 				<td style="text-align: center;">
-				  <img src="cornell.png" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
-				</td>
-			  </tr>
-			  <tr>
-				<td style="text-align: center;">
-				  <img src="cornell.png" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
+				  <img src="CBempty.png" width="400px"/>
+				  <figcaption>CBempty.</figcaption>
 				</td>
 				<td style="text-align: center;">
-				  <img src="cornell.png" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
-				</td>
+					<img src="cow.png" width="400px"/>
+					<figcaption>Cow.</figcaption>
+				  </td>
 			  </tr>
 			</table>
 		</div>
 		
 		<h2>Part 2: Bounding Volume Hierarchy</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		<p> To construct the BVH, I go through all the primitives in our BVHnode, and add their bounding box to a bounding box.
+			Once that is done, I create a new node premeptively before checking if the amount of primitives (that weren't a null pointer)
+			we checked was less than or equal to the max_leaf_size. If so, that means it was a leaf, and I can set the start and end 
+			primitive iterators of the node before returning it. <br><br>
+
+			If it wasn't a leaf node (aka that we had more primitives than the max size our leaf would allow), I would create an intermediate "centroidbbox"
+			where I store the centroids of the bbox's of all of our primitives in the node. Then I find the longest axis of our overarching bbox, and then use that to 
+			calculate the average centroid we have using the previous centroids collected, using that as a splitting point since it would try to ensure a more even split of
+			the centroids/primitives if they all happened to be clustered in one area of the bounding box and not uniformly dispersed.
+			I then call std::partition to get two iterators, one for the left side of the bbox, and one for the right side. <br><br>
+
+			Then, I recursively call construct_bvh on the left and right iterators to construct the left and right node, and this process repeats until all of our last leaves are placed.
+			At the end of each call, the node's left, and right children are set, as well as it's bounding box, and I expand it's bounding box with the right node's bounding box 
+			due to generally "halving" the left side of a bounding box and splitting off into more and more children on the left.<br><br>
+
+			The rendering times of complex geometrical images took around 12 minutes or less with BVH acceleration, with CBLucy taking about 12 minutes, CBDragon taking a little less than 12 minutes, and 
+			CBcoil taking less than 30 seconds. Without BVH acceleration, all three took over an hour to render, and with a check in at thirty minutes of rendering, not even 1% was rendered. 
+			With BVH acceleration, we are able to quickly traverse the tree, and discard the areas of the image that the light doesn't hit by going down to the leaves and running intersection on those primitives and returning
+			the closest intersection. Since our leaves are capped at a maximum primitive limit, this vastly improves computation time since we're essentially just checking a constant number of primitives. Without using BVHAcceleration,
+			we would have to cycle through every single primitive, which could be on the order of thousands, and millions, which wastes a lot of time computationally if it's not in the area that we are looking, so we're wasting a lot of
+			time looking at air/in the wrong area. With BVHAcceleration, we narrow the scope immensely, and can cut down the time needed to ray trace and appropriately render our scenes.
+			 
+		</p>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="CBdragon_screenshot_3-19_22-6-39.png" width="400px"/>
+				  <figcaption>CBdragon.</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="CBlucy_screenshot_3-19_21-50-54.png" width="400px"/>
+				  <figcaption>CBLucy.</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="CBcoil_screenshot_3-20_0-59-35.png" width="400px"/>
+					<figcaption>CBcoil.</figcaption>
+				  </td>
+			  </tr>
+			</table>
+		</div>
+
+
 
 		<h2>Part 3: Direct Illumination</h2>
 		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
