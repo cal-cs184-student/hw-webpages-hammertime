@@ -32,8 +32,8 @@
 
 		<br>
 
-		Link to webpage: (TODO) <a href="https://cs184.eecs.berkeley.edu/sp25">cs184.eecs.berkeley.edu/sp25</a><br>
-		Link to GitHub repository: (TODO) <a href="https://github.com/cal-cs184-student/sp25-hw3-nobodyakaodysseus">https://github.com/cal-cs184-student/sp25-hw3-nobodyakaodysseus</a>
+		Link to webpage:  <a href="https://cal-cs184-student.github.io/hw-webpages-hammertime/hw3/index.html">https://cal-cs184-student.github.io/hw-webpages-hammertime/hw3/index.html</a><br>
+		Link to GitHub repository:  <a href="https://github.com/cal-cs184-student/sp25-hw3-nobodyakaodysseus">https://github.com/cal-cs184-student/sp25-hw3-nobodyakaodysseus</a>
 		
 		<figure>
 			<img src="cornell.png" alt="Cornell Boxes with Bunnies" style="width:70%"/>
@@ -44,8 +44,16 @@
 		We've already added one heading per part, to make your write-up as navigable when grading. Please fit your write-up within these sections!
 		-->
 
+		<h2>Use of GenAI</h2>
+		<p>ChatGPT was used to help learn/how to use certain C++ functions such as std::partition as I am still not super experienced 
+			with C++. Additionally, ChatGPT was used to help debug issues and break down concepts I was having trouble with, 
+			such as global illumination, which I used along with supplemental lecture and discussion material to ensure I understood what I was doing,
+			using it as a learning tool and a second eye to catch any bugs I may have not been able to.  </p>
 		<h2>Overview</h2>
-		Give a high-level overview of what you implemented in this homework. Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the homework.
+		<p>I learned how to generate rays and pass them through a scene, and how to calculate and show the light that bounces off 
+			objects, or that just comes straight from the light source. I used bounding boxes and bvhs to increase speed and efficiency, 
+			as well as direct illumination and global illumination to fully raytrace a scene to provide realistic
+			lighting and shading through raytracing. It was neat to see that I could create realistic shading even down to colored shadows.</p>
 
 		<h2>Part 1: Ray Generation and Scene Intersection</h2>
 		<p>In ray generation, I shifted the coordinates given to us into coordinates relative to the camera space, 
@@ -141,27 +149,238 @@
 
 
 		<h2>Part 3: Direct Illumination</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		<p> For estimate_direct_lighting_hemisphere, I set up the pdf (1/2*pi), and a running sum. For every sample for up to num_samples, 
+			I use the hemisphereSampler to get wi, which I put into world coordinates before normalizing it. I then initialize a new ray using
+			the hitpoint as our origin, the World_wi as the direction, min_t as EPS_F and max_t as INF_F, and initialized an empty Intersection variable.
+			I then use the new ray and intersection I created to check if there is an intersection, and if there was, I would take the emission of the new intersection variable, the bsdf of
+			our original intersection variable, and get the cos_theta of our wi, and divide it all by our original pdf.<br><br>
+		
+			For estimate_direct_lighting_importance, it starts out similarily where I initialize a sum and an establishing count of samples (numsamples), before
+			I loop through all the lights in the scene, and for each light I check if it's a point light or not, and
+			set their samples accordingly (numsamples = 1 for point lights, and ns_area_light for other lights). I set up another forloop which samples the light num_sample times, which the rest of the code is in.
+			I then get the radiance of the light by using sample_L, and get the wi which I put into object coordinates (objwi).
+			I then initialize an empty intersection variable and ray similarily to before, with the origin as hit_p, direction as the original wi, min_t as EPS_F, and max_t as distToLight-EPS_F.
+			I then check if there is an intersection with those new variables, and if there isn't, then I know we have the ray coming back to the light source, so 
+			then I sum up the ((radiance * isect.bsdf->f(w_out, objw_in) * cos_theta(objw_in))/pdf).
+			Once we loop up to a new light, I divide sum by the number of samples that were taken, and once we're completely done with the loops, I return sum at the end.<br><br>
+		
+			Looking at varying levels of light in the scene with soft shadows, we can see that with less rays, there's less of a softer/lighter grey in the soft shadows, instead just scatered black dots and higher levels of noise.
+			As the number of rays goes up, we get a smoother transition between colors, seeing black and white, but also an intermediate grey that fades up into white, or melds a bit better into black, showing less noise.<br><br>
+
+			Uniform hemisphere sampling tends to have more noise than lighting sampling tends to have, having a sort of grainy effect across the image that gives a tv static esque look.
+			Meanwhile, Lighting Sampling through importance sampling tends to have a much cleaner, sleeker look with no noise at all. This is due to Importance Sampling effectively smoothing the integrand curve, and sampling 
+			where there are more contributions to the integral, and we're sampling from the lights itself instead of the hemisphere, meaning it's more concentrated on the light instead of spreading everywhere in the scene. Because of this, the lowered noise adds to a smoother finish.
+		</p>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="t3hemispherebunny.png" width="400px"/>
+				  <figcaption>Hemisphere Direct Lighting.</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="t3sphereshemisphere.png" width="400px"/>
+				  <figcaption>Hemisphere Direct Lighting.</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="t3bunnyimportance.png" width="400px"/>
+				  <figcaption>Importance Sampling Direct Lighting.</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="t3spheresimportance.png" width="400px"/>
+				  <figcaption>Importance Sampling Direct Lighting.</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="t3spheres1ray1sample.png" width="400px"/>
+				  <figcaption>1 ray, 1 sample.</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="t3spheres4ray1sample.png" width="400px"/>
+				  <figcaption>4 rays, 1 sample.</figcaption>
+				</td>
+			</tr>
+			<tr>
+				<td style="text-align: center;">
+					<img src="t3spheres16ray1sample.png" width="400px"/>
+					<figcaption>16 rays, 1 sample.</figcaption>
+				  </td>
+				  <td style="text-align: center;">
+					<img src="t3spheres64ray1sample.png" width="400px"/>
+					<figcaption>64 rays, 1 sample.</figcaption>
+				  </td>
+			  </tr>
+			</table>
+		</div>
+
+
 
 		<h2>Part 4: Global Illumination</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		<p>My implementation of at_least_one_bounce_radiance starts with calling one_bounce_radiance and adding it to L_out. I then check
+			the recursive basecase if the ray depth is 1 or less, which I then just return L_out. Otherwise, I initialize the wi and pdf through sample_f of our intersection's bsdf,
+			then I place the wi in world coordinates and normalize it. I initialize a new ray and intersection variable, with origin hit_p, direction world_wi, min_t EPS_F, max_t INF_F,
+			and depth being the original ray's depth subtracted one. I then check if there's an intersection with the new ray and new intersection variable via use of the scene's bvh.
+			If there is an intersection, I conduct Russian Roulette with a 30% chance of termination, but if it' succeeds, I recursively call the function again and multiply it as we have before, and additionally divide by 0.7 to help normalize this.
+			((at_least_one_bounce_radiance(newray, tempisect) * bsdf * cos_theta(w_in))/pdf/0.7;). Then, I check if isAccumBounces true, and if so, I add it to L_out, and otherwise I only add it to L_out if the new ray's depth is equal to 1, meaning it's at the n'th bounce that we want.
+			At the very end, I just return L_out. I additionally did set the ray.depth to be the max_ray_depth in raytrace_pixel, and set up sample_f so it would return a pdf, and wi along with calling f on our bsdf.
+			<br><br>
+			I did not have enough time to render everything at the resoultions asked in the deliverables due to time constraints unfortunately, but I will provide the best approximations I can, I am so sorry.<br>
+			I was unable to correctly code the isAccumBounces, so I will reference the spec's images, which are not linked here for redundancy. I have not linked my own images since they look more or less the same as my isAccumBounces == True and Russian Roulette. <br><br>
+			The second bounce is brighter than the third, the third having far more shadows, but more light on the floor while the second had more light on the 
+			surfaces of spheres and walls. In the rasterization/rendering of the image, the second bounce makes the shadows on the bottom of the spheres and the walls/ceiling lighter with ambient 
+			lighting, darker than the directly lit areas but not entirely black due to the diffuse lighting and ambient lighting bouncing around, while the third bounce of light in rasterization add more color to the shadows cast by the balls and lightens the shadows slightly, having shadows that are more blue or red, and the floor generally having a slight bit more of a glow.
+			These together add to the ambience of the piece, adding more realistic lighting implications with colored shadows and more soft shadows since real life shadows are rarely purely black, and everything covered in harsh shadows, there often is a lot of diffuse and ambient lighting that reflects upwards.
+
+		</p>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="t4bunnyglobal.png" width="400px"/>
+				  <figcaption>Bunny in Global Illumination, 64 samples.</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="t4direct.png" width="400px"/>
+					<figcaption>Bunny in Direct Illumination, 64 samples.</figcaption>
+				  </td>
+				<td style="text-align: center;">
+				<img src="t4indirect.png" width="400px"/>
+				<figcaption>Bunny in Indirect Illumination, 64 samples.</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="test.png" width="400px"/>
+				  <figcaption>Example of my isAccumBounces == False failing. Sample 16.</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="t4m0s16.png" width="400px"/>
+				  <figcaption>Russian Roulette, sample 16, m = 0.</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="t4m1s16.png" width="400px"/>
+					<figcaption>Russian Roulette, sample 16, m = 1.</figcaption>
+				  </td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+					<img src="t4m2s16.png" width="400px"/>
+					<figcaption>Russian Roulette, sample 16, m = 2.</figcaption>
+				  </td>
+				  <td style="text-align: center;">
+					<img src="t4m3s16.png" width="400px"/>
+					<figcaption>Russian Roulette, sample 16, m = 3.</figcaption>
+				  </td>
+				  <td style="text-align: center;">
+					<img src="t4m4s16.png" width="400px"/>
+					<figcaption>Russian Roulette, sample 16, m = 4.</figcaption>
+				  </td>
+			</tr>
+			<tr>
+				<td style="text-align: center;">
+					<img src="t4m5s16.png" width="400px"/>
+					<figcaption>Russian Roulette, sample 16, m = 5.</figcaption>
+				  </td>
+				  <td style="text-align: center;">
+					<img src="t4m100s16.png" width="400px"/>
+					<figcaption>Russian Roulette, sample 16, m = 100.</figcaption>
+				  </td>
+			  </tr>
+			  <tr>
+			  <td style="text-align: center;">
+				<img src="t4m6s1l4.png" width="400px"/>
+				<figcaption>Sample 1, Light 4, M 6.</figcaption>
+			  </td>
+			  <td style="text-align: center;">
+				<img src="t4m6s2l4.png" width="400px"/>
+				<figcaption>Sample 2, Light 4, M 6.</figcaption>
+			  </td>
+			</tr>
+			<tr>
+				<td style="text-align: center;">
+				  <img src="t4m6s4l4.png" width="400px"/>
+				  <figcaption>Sample 4, Light 4, M 6.</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="t4m6s8l4.png" width="400px"/>
+				  <figcaption>Sample 8, Light 4, M 6.</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="t4m6s16l4.png" width="400px"/>
+				  <figcaption>Sample 16, Light 4, M 6.</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="t4m6s64l4.png" width="400px"/>
+				  <figcaption>Sample 64, Light 4, M 6.</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="t4m6s1024l4.png" width="400px"/>
+					<figcaption>Sample 1024, Light 4, M 6.</figcaption>
+				  </td>
+			  </tr>
+			</table>
+		</div> 
 
 		<h2>Part 5: Adaptive Sampling</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		<p>Adaptive sampling is a sort of dynamic sampling that instead focuses on sampling from more difficult/complex parts of images so rendering is smoother and we can allocate resources more efficiently so we 
+			don't have to wait the same amount of time for a pixel to converge or use the same amount of resources on a simple part 
+			of the image when we can put more of our effort elsewhere to come out with the most efficient outcome.<br><br>
+
+			In raytrace_pixel, I set up the s1 (mean helper), s2 (standard deviation helper), and traker samples to use within our for loop where I loop through numsamples amount of times.
+			There, I sample from the grid, normalize the x and y coordinates and generate a ray using those coordinates. I set the ray depth to be the max_ray_depth that there can be.
+			Then, I get the screen radiance using est_radiance_global_illumination and add that to my tracker variable. I then add the illuminance to s1, and the squared illuminace to s2, and increment tracker samples.
+			Then every samplesPerBatch samples (ie 32), and if we aren't just starting the loop, I calculate the mean and standard deviation squared, and check if
+			1.96*I is less than or equal to the max Tolerance*mean, I just break out of the for loop and immediately divide our tracker sum by the tracker samples we accumulated through the forloop, before updating our pixels and putting tracker samples into our sampleCountBuffer.
+			<br><br>
+			
+		</p>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="t5bunny.png" width="400px"/>
+				  <figcaption>Bunny.</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="t5bunny_rate.png" width="400px"/>
+					<figcaption>Bunny Rate.</figcaption>
+				  </td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="t5blob.png" width="400px"/>
+				  <figcaption>Blob.</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="t5blob_rate.png" width="400px"/>
+					<figcaption>Blob Rate.</figcaption>
+				  </td>
+			  </tr>
+			</table>
+		</div>
 
 		<h2>(Optional) Part 6: Extra Credit Opportunities</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		I don't have anything since I was struggling and used nearly all my slip days but would a cute shark give a extra bonus credit point?
 		
-		<h2>Additional Notes (please remove)</h2>
-		<ul>
-			<li>You can also add code if you'd like as so: <code>code code code</code></li>
-			<li>If you'd like to add math equations, 
-				<ul>
-					<li>You can write inline equations like so: \( a^2 + b^2 = c^2 \)</li>
-					<li>You can write display equations like so: \[ a^2 + b^2 = c^2 \]</li>
-				</ul>
-			</li>
-		</ul>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="shark.png" width="400px"/>
+				  <figcaption>drew him myself.</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
 		</div>
 	</body>
 </html>
