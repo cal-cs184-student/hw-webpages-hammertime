@@ -74,7 +74,69 @@
 		</div>
 
 		<h2>Part 2: Simulation via numerical integration</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		Most of my examples are shown with pinned2 since it's easier to see more visible changes with the different shading colors it has compared to pinned4.
+		Changing the spring constant ks and density causes the depth of the drape of the cloth to vary, while changing the damping affects the fall/swing of the cloth.
+		With a low ks, the cloth seems to sink down more, seeming to be a much more loose, fluid material. 
+		With a higher ks, it's stiffer and doesn't dip down nearly as much when draped down.
+		With a very low density (1 g/cm^2), the material looks a bit stiffer, barely bending downwards when draping, as if it didn't really weigh much and the pull .
+		With a high density of 100g/cm^2, the material drapes down further, as if it has more weight that's pulling it down.
+		With no damping, the cloth swings wildly back and forth when dropped, not really stopping until after some time.
+		With max damping, the cloth slowly swings downwards in a measured pace before stopping where it's supposed to end up.
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="HW4T2 pinned4 wire.png" width="400px"/>
+				  <figcaption>Pinned 4, Wireframe, Default Settings.</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="HW4T2 pinned4 shaded.png" width="400px"/>
+					<figcaption>Pinned 4, Normal Shading, Default Settings.</figcaption>
+				  </td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="HW4T2 Normal.png" width="400px"/>
+				  <figcaption>Normal Settings, Pinned 2 (Will be Pinned 2 for the Rest of the Images).</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="HW4T2 Low Ks 1000.png" width="400px"/>
+				  <figcaption>Low ks (1000 N/m).</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="HW4T2 High Ks 20000.png" width="400px"/>
+					<figcaption>High ks (20,000 N/m).</figcaption>
+				  </td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+					<img src="HW4T2 Low Density 1.png" width="400px"/>
+					<figcaption>Low Density (1 g/cm^2).</figcaption>
+				  </td>
+				  <td style="text-align: center;">
+					  <img src="HW4T2 High Density 100.png" width="400px"/>
+					  <figcaption>High Density (100 g/cm^2).</figcaption>
+					</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+					<img src="HW4T2 0 Damping.png" width="400px"/>
+					<figcaption> No Damping <br>
+						(Image shown to be in the middle of swinging back and forth).
+					</figcaption>
+				  </td>
+				  <td style="text-align: center;">
+					  <img src="HW4T2 Max Damping.png" width="400px"/>
+					  <figcaption> Max Damping <br>
+						(Image shown to be in the middle of swinging back).
+					</figcaption>
+					</td>
+			  </tr>
+			</table>
+		</div>
 
 		<h2>Part 3: Handling collisions with other objects</h2>
 		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
