@@ -32,11 +32,11 @@
 
 		<br>
 
-		Link to webpage: (TODO) <a href="https://cs184.eecs.berkeley.edu/sp25">cs184.eecs.berkeley.edu/sp25</a>
+		Link to webpage: <a href="https://cal-cs184-student.github.io/hw-webpages-hammertime/hw4/index.html">https://cal-cs184-student.github.io/hw-webpages-hammertime/hw4/index.html</a>
 
 		<br>
 
-		Link to GitHub repository: (TODO) <a href="https://github.com/cal-cs184-student/sp25-hw4-annnnnnnnnn">https://github.com/cal-cs184-student/sp25-hw4-annnnnnnnnn</a>
+		Link to GitHub repository: <a href="https://github.com/cal-cs184-student/sp25-hw4-annnnnnnnnn">https://github.com/cal-cs184-student/sp25-hw4-annnnnnnnnn</a>
 
 		<figure>
 			<img src="clothsim.png" alt="Cloth draped over sphere" style="width:70%"/>
@@ -139,27 +139,339 @@
 		</div>
 
 		<h2>Part 3: Handling collisions with other objects</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		<p>In handling sphere collisions, I checked if the distance between the current position and the 
+			sphere origin was less than the radius. If it was, then I would get the direction vector, and make it into a unit vector 
+			that I multiplied to the radius to get the adjustment vector. I added that to the origin to get where the new position should be.
+			Then, I subtracted that from our last position to get a correction vector. Finally, I add that correction vector to our last position to 
+			move it into the correct direction, and multiply it by 1 - friction.<br><br>
+
+			I do something similar for plane collisions. I check if the dot products of the current point subtracted 
+			from the point on the plane with the normal is the same sign as the dot product of the last point subtracted from the point on the 
+			plane with the normal, using their projections. If they are different signs, then I know that the point went into the plane. 
+			I calculate the new position by adding our current position 
+			with the negative dot product of the normal and the current position subtracted from the plane point which has a surface 
+			offset added to it, and overall multiplied by the plane normal. Finally, I subtract that point from the last position for the correction 
+			vector, and add that to our last position multiplied by (1-friction).
+
+			For both, I collide every point mass with every collision object to handle collisions.
+
+			With a lower ks, the cloth is far more droopy and flaccid, and as we increase the ks, it becomes more stiff, sticking out more.
+
+
+		</p>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="HW4T3 Normal Sphere Default.png" width="400px"/>
+				  <figcaption>Sphere, Default Settings.</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="HW4T3 Plane.png" width="400px"/>
+					<figcaption>Plane, Default Settings.</figcaption>
+				  </td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="HW4T3 Sphere 500 ks.png" width="400px"/>
+				  <figcaption>Sphere, with a ks of 500 N/m.</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="HW4T3 Sphere 50000 ks.png" width="400px"/>
+					<figcaption>Sphere, with a ks of  50,000 N/m.</figcaption>
+				  </td>
+			  </tr>
+			</table>
+		</div>
+		
 
 		<h2>Part 4: Handling self-collisions</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		<p>
+			I first calculated the hash positions by calculating the w, h, and t of the 3D boxes, and truncate 
+			the coordinates of the positions we are given. I then fmod the x*y+z coordinates by the w*h*t. 
+			I call this in build spatial map, where after the given starter code of clearing the map, I will go through all the point masses,
+			compute their hash key and check if the key is in the map. If it is, I'll push the point mass into the map, and if not, I will create 
+			a new vector of PointMass* before pushing the pointmass in.
+			In self collide, I call hash_pposition to get the key, and I grab the vector of pointmasses that the key points to. From there, I create 
+			a new vector sum up all of the correction vectors I will be making. I loop through all of the pointmasses in the vector, and if it's 
+			not equal to the pointmass given to us in the parameters, I will check it's distance from each other. If it's less than 
+			or equal to 2*thickness, I subtract the given pm's position from the observed pm's position, make it into a unit vector and 
+			multiply that by 2*thickness minus the distance the two pointmasses are from each other. From there, I add it to the sum of corrections 
+			vector. At the very end, I average the sum of corrections, divide it by simulationsteps, and add that correction vector to our pm's position.
+			<br><br>
+			Within the actual simulate function, I call build spatial map, and then for all point masses, I call self collide on them.
+			<br><br>
+			With a higher density, the fabric crumples very fast and there tends to be a lot of folds as it folds over itself, but at a 
+			lighter density, theres far less folds, and the resting state tends to be far flatter.
+			The inverse happens with ks, where a higher ks has less folds as it falls and a flatter end state, while a lower ks tends to have far more 
+			folds on itself and a more folded resting position vs the smoother folds of a higher ks/lower density. 
+			With a low density and a low ks, the ks features win out and there tends to be a lot of folding/wrinkling. If given a high ks, and a high density, the 
+			higher density wins out and there are a lot of folds. Overall, it looks like density and ks have an inverse relationship in how it affects the amount of folds,
+			with high density and low ks cause the most amount of folds, while high ks and low density has the least. If the ks and density happen to match (i.e. high ks with low density, 
+			or low ks with high density), the results look as expected. However, if they contrast, the higher density/lower ks always wins, and we always get more wrinkly/more folds in the fabric.
+
+		</p>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="HW4T4 Normal 1.png" width="400px"/>
+				  <figcaption>Default, Mid Fall.</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="HW4T4 Normal 2.png" width="400px"/>
+					<figcaption>Default, Fallen.</figcaption>
+				  </td>
+				  <td style="text-align: center;">
+					<img src="HW4T4 Normal 3.png" width="400px"/>
+					<figcaption>Default, A few seconds after Fallen.</figcaption>
+				  </td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="HW4T4 500 Density NKS.png" width="400px"/>
+				  <figcaption>Density: 500, KS: 5000.</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="HW4T4 500 Density NKS Done.png" width="400px"/>
+					<figcaption>Density: 500, KS: 5000.</figcaption>
+				  </td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="HW4T4 1 density.png" width="400px"/>
+				  <figcaption>Density: 1, KS: 5000.</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="HW4T4 1 density done.png" width="400px"/>
+					<figcaption>Density: 1, KS: 5000.</figcaption>
+				  </td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="HW4T4 dnormal ks 50000.png" width="400px"/>
+				  <figcaption>Density: 15, KS: 50,000.</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="HW4T4 dnormal ks 50000 done.png" width="400px"/>
+					<figcaption>Density: 15, KS: 50,000.</figcaption>
+				  </td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="HW4T4 dnormal ks 5.png" width="400px"/>
+				  <figcaption>Density: 15, KS: 5.</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="HW4T4 dnormal ks 5 done.png" width="400px"/>
+					<figcaption>Density: 15, KS: 5.</figcaption>
+				  </td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="HW4T4 d1 ks5 .png" width="400px"/>
+				  <figcaption>Density: 1, KS: 5.</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="HW4T4 d1 ks5  done.png" width="400px"/>
+					<figcaption>Density: 1, KS: 5.</figcaption>
+				  </td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="HW4T4 d500 ks 5.png" width="400px"/>
+				  <figcaption>Density: 500, KS: 5.</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="HW4T4 d500 ks 5 done.png" width="400px"/>
+					<figcaption>Density: 500, KS: 5.</figcaption>
+				  </td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="HW4T4 d5 ks 50000.png" width="400px"/>
+				  <figcaption>Density: 5, KS: 50,000.</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="HW4T4 d5 ks 50000 done.png" width="400px"/>
+					<figcaption>Density: 5, KS: 50,000.</figcaption>
+				  </td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="HW4T4 d500 ks 50000.png" width="400px"/>
+				  <figcaption>Density: 500, KS: 50,000.</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="HW4T4 d500 ks 50000 dpne.png" width="400px"/>
+					<figcaption>Density: 500, KS: 50,000.</figcaption>
+				  </td>
+			  </tr>
+			</table>
+		</div>
 
 		<h2>Part 5: Shaders</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		<p>
+			A shader program is a part of the graphics pipeline that takes in inputs and outputs single four dimensional vectors 
+			that represent the lighting, shading, and color of an object, to give the object realistic lighting. 
+			Vertex shaders takes in inputs and their outputs become the inputs of fragment shaders. Vertex shaders transform the vertices 
+			themselves, moving their positions/adjusting them geometrically (i.e., how we used this in Displacement.vert), while fragment shaders 
+			in this instance take in "fragments" (or pixels for our intents and purposes, but typically closer to samples), and use their geometric 
+			properties to compute a final color and lighting effects. <br><br>
 
-		<h2>(Optional) Part 6: Extra Credit - Additional cloth simulation features!</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+			The Blinn-Phong shading model calculates the ambient, diffuse, and specular light and combines them to create realistic "shiny" lighting,
+			making fabric in this assignment look like plastic or latex. The diffuse lighting just takes advantage of the light direction, while ambient is the general illumination, 
+			and specular keeps in mind the camera direction, which combines together to have the light shining realistically at the camera depending on the lighting direction.
+			<br><br>
+			Bump shading isn't all too different from Displacement shading, having the same base code but we also directly alter the vertices 
+			in displacement shading by adding height scaling and normalizing the positions after height scaling and height mapping. Bump shading 
+			on the other hand doesn't do that, only altering the normals of the object surface to give the illusion of bumps. As a result, 
+			bump shading still leaves a rather smooth surface on the sphere and fabric, while displacement shading there are visible jagged edges and 
+			non-smooth geometry on the sphere and fabric. With the different resolutions, higher resolutions seem to yield more details (which is more 
+			easily observable on displacement mapping than bump mapping), with crisper lines,more jagged edges, and more realistic shadows, while lower resolution has a little bit 
+			more of a smoothed effect with darker shadows. Still, the differences are rather hard to tell given the texture I used, so displacement mapping is the best set of images to check 
+			to see the differences.
+			<br><br>
+			For the extra credit custom shader, I combined bump shading with mirror shading by overlaying texture 2 into bump maping and the regular cube mapping for mirror shading. 
+			I set it up similarily to how you do bump mapping, but at the very end, I grab the outgoing ray vector and reflect that over our normal vector, and grab the color from that. 
+			Then I combine that color vector with the bump shading vector, turning both into vec4's, and that gives us bright mirror shading with bump mapping details.
+
+		</p>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="T5 phong ambient .png" width="400px"/>
+				  <figcaption>Blinn-Phong: Ambient.</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="t5 phong ambient done.png" width="400px"/>
+					<figcaption>Blinn-Phong: Ambient.</figcaption>
+				  </td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="t5 phong diffuse.png" width="400px"/>
+				  <figcaption>Blinn-Phong: Diffuse.</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="t5 phong diffuse done.png" width="400px"/>
+					<figcaption>Blinn-Phong: Diffuse.</figcaption>
+				  </td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="t5 phong specular.png" width="400px"/>
+				  <figcaption>Blinn-Phong: Specular.</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="t5 phong specular done.png" width="400px"/>
+					<figcaption>Blinn-Phong: Specular.</figcaption>
+				  </td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="t5 phong full.png" width="400px"/>
+				  <figcaption>Blinn-Phong: All.</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="t5 phong full done.png" width="400px"/>
+					<figcaption>Blinn-Phong: All.</figcaption>
+				  </td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="t5 custom texture mapping.png" width="400px"/>
+				  <figcaption>Custom Texture Mapping.</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="t5 bump.png" width="400px"/>
+				  <figcaption>Bump Mapping: Default.</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="t5 bump done.png" width="400px"/>
+					<figcaption>Bump Mapping: Default.</figcaption>
+				  </td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="t5 bump 16.png" width="400px"/>
+				  <figcaption>Bump Mapping: -o 16 -a 16.</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="t5 bump 16 done.png" width="400px"/>
+					<figcaption>Bump Mapping: -o 16 -a 16.</figcaption>
+				  </td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="t5 bump 128.png" width="400px"/>
+				  <figcaption>Bump Mapping: -o 128 -a 128.</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="t5 bump 128 done.png" width="400px"/>
+					<figcaption>Bump Mapping: -o 128 -a 128.</figcaption>
+				  </td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="t5 displacement.png" width="400px"/>
+				  <figcaption>Displacement Mapping: Default.</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="t5 displacement done.png" width="400px"/>
+					<figcaption>Displacement Mapping: Default.</figcaption>
+				  </td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="t5 displacement 16.png" width="400px"/>
+				  <figcaption>Displacement Mapping: -o 16 -a 16.</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="t5 displacement 16 done.png" width="400px"/>
+					<figcaption>Displacement Mapping: -o 16 -a 16.</figcaption>
+				  </td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="t5 displacement 128.png" width="400px"/>
+				  <figcaption>Displacement Mapping: -o 128 -a 128.</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="t5 displacement 128 done.png" width="400px"/>
+					<figcaption>Displacement Mapping: -o 128 -a 128.</figcaption>
+				  </td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="t5 mirror.png" width="400px"/>
+				  <figcaption>Mirror.</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="t5 mirror done.png" width="400px"/>
+					<figcaption>Mirror.</figcaption>
+				  </td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="t5 custom.png" width="400px"/>
+				  <figcaption>Custom Shaders: Mirror x Bump Mapping.</figcaption>
+				</td>
+				<td style="text-align: center;">
+					<img src="t5 custom done.png" width="400px"/>
+					<figcaption>Custom Shaders: Mirror x Bump Mapping.</figcaption>
+				  </td>
+			  </tr>
+
+			</table>
+		</div>
 		
-		<h2>Additional Notes (please remove)</h2>
-		<ul>
-			<li>You can also add code if you'd like as so: <code>code code code</code></li>
-			<li>If you'd like to add math equations, 
-				<ul>
-					<li>You can write inline equations like so: \( a^2 + b^2 = c^2 \)</li>
-					<li>You can write display equations like so: \[ a^2 + b^2 = c^2 \]</li>
-				</ul>
-			</li>
-		</ul>
 		</div>
 	</body>
 </html>
